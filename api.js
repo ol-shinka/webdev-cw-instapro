@@ -73,6 +73,7 @@ export function uploadImage({ file }) {
 
 
 //отпраляем новые данные   
+
 export const postPosts = ({ token, description, imageUrl }) => {
   return fetch(postsHost, {
     method: "POST",
@@ -97,6 +98,7 @@ export const postPosts = ({ token, description, imageUrl }) => {
 }
 
 //удаление
+
 export function deleteFetch({ token } ,id ) {
   return fetch(`${postsHost}/${id}`, {
       method: "DELETE",
@@ -115,6 +117,7 @@ export function deleteFetch({ token } ,id ) {
 
 
 //получаем посты конкретного пользователя
+
 export function fetchPostsUser( id , { token }) {
   return fetch(`${postsHost}/user-posts/${id}`, {
     method: "GET",
@@ -136,6 +139,7 @@ export function fetchPostsUser( id , { token }) {
 
 
 //лайки
+
 export const toggleLike = (id, {token}) => {
   return fetch(`${postsHost}/${id}/like`, {
     method: "POST",
