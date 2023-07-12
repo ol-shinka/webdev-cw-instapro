@@ -16,7 +16,8 @@ import {
   saveUserToLocalStorage,
 } from "./helpers.js";
 
-export let user = getUserFromLocalStorage();
+
+export let user = getUserFromLocalStorage(); //объект или null === false
 export let page = null;
 export let posts = [];
 
@@ -26,9 +27,9 @@ const getToken = () => {
 };
 
 export const logout = () => {
-  user = null;
+  user = null; // обнуляется юзер когда выходим из аккаунта
   removeUserFromLocalStorage();
-  goToPage(POSTS_PAGE);
+  goToPage(POSTS_PAGE);//перебрасывает на страницу постов
 };
 
 /**
@@ -74,7 +75,7 @@ export const goToPage = (newPage, data) => {
     }
 
     if (newPage === USER_POSTS_PAGE) {
-      // TODO: реализовать получение постов юзера из API
+      // TODO: реализую получение постов юзера из API
       console.log("Открываю страницу пользователя: ", data.userId);
       page =  LOADING_PAGE;
       //posts = [];
