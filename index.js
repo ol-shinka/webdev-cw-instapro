@@ -1,4 +1,4 @@
-import { getPosts } from "./api.js";
+import { getPosts, postPosts , deleteFetch, fetchPostsUser, toggleLike, dizLike} from "./api.js";
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -34,6 +34,22 @@ export const logout = () => {
 /**
  * Включает страницу приложения
  */
+
+
+function getAPI() {
+  return getPosts({ token: getToken() })
+    .then((newPosts) => {
+      page = POSTS_PAGE;
+      posts = newPosts;
+      renderApp();
+    })
+    .catch((error) => {
+      console.error(error);
+      goToPage(POSTS_PAGE);
+    });
+  }
+
+
 export const goToPage = (newPage, data) => {
   if (
     [
@@ -53,25 +69,27 @@ export const goToPage = (newPage, data) => {
     if (newPage === POSTS_PAGE) {
       page = LOADING_PAGE;
       renderApp();
+     return getAPI();
 
-      return getPosts({ token: getToken() })
-        .then((newPosts) => {
-          page = POSTS_PAGE;
-          posts = newPosts;
-          renderApp();
-        })
-        .catch((error) => {
-          console.error(error);
-          goToPage(POSTS_PAGE);
-        });
     }
 
     if (newPage === USER_POSTS_PAGE) {
       // TODO: реализовать получение постов юзера из API
       console.log("Открываю страницу пользователя: ", data.userId);
-      page = USER_POSTS_PAGE;
-      posts = [];
-      return renderApp();
+      page =  LOADING_PAGE;
+      //posts = [];
+      renderApp();   
+      
+        return fetchPostsUser ( data.userId, { token: getToken() } )
+        .then((newPosts) => {
+          page = USER_POSTS_PAGE;
+          posts = newPosts;
+          renderApp();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      
     }
 
     page = newPage;
@@ -112,7 +130,25 @@ const renderApp = () => {
       onAddPostClick({ description, imageUrl }) {
         // TODO: реализовать добавление поста в API
         console.log("Добавляю пост...", { description, imageUrl });
-        goToPage(POSTS_PAGE);
+       //goToPage(POSTS_PAGE);
+        postPosts ({ token: getToken(), description, imageUrl })
+         .then(() => {     
+           goToPage(POSTS_PAGE);
+         })
+        .catch((error) => {
+
+          // В объекте error есть ключ message, в котором лежит сообщение об ошибке
+          // Если сервер сломался, то просим попробовать позже
+          if (error.message === "Сервер сломался") {
+            alert("Сервер сломался, попробуйте позже");
+            postPosts({ token: getToken(), description, imageUrl });
+          }  else {
+              alert('Кажется, у вас сломался интернет, попробуйте позже');
+              console.log(error);
+            }
+        });
+
+
       },
     });
   }
@@ -126,8 +162,52 @@ const renderApp = () => {
   if (page === USER_POSTS_PAGE) {
     // TODO: реализовать страницу фотографию пользвателя
     appEl.innerHTML = "Здесь будет страница фотографий пользователя";
-    return;
+     return renderPostsPageComponent({
+      appEl,
+    });
   }
+
+
+
 };
 
 goToPage(POSTS_PAGE);
+
+export function deletePost( id ) {
+  if (user) {
+    deleteFetch({ token: getToken() },  id)
+    .then((newPosts) => {
+    posts = newPosts;
+    //return renderApp();
+      getAPI();
+    })
+  };
+};
+
+
+
+export function putLikes( id ) {
+  //if (user) {
+    toggleLike( id, { token: getToken() })
+    .then(() => {
+      getAPI()
+    })
+    .catch((error) => {
+      alert(error.message);
+      goToPage(AUTH_PAGE);
+    });
+  //};
+};
+
+export function removeLikes( id ) {
+  //if (user) {
+    dizLike(id, { token: getToken() })
+    .then(() => {
+      getAPI()
+    })
+    .catch((error) => {
+      alert(error.message);
+      goToPage(AUTH_PAGE);
+    });
+ //};
+};
